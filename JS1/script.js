@@ -309,7 +309,7 @@ document.addEventListener("DOMContentLoaded", function () {
     statusArea.textContent = "🤖 AI 正在思考中...";
 
     try {
-      const response = await fetch("https://contractgpt-worker.millychck-033.workers.dev", {
+      const response = await fetch("https://7777-bonus-b72e.millychck-033.workers.dev/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ contract: fullContractText, question: userMessage })
