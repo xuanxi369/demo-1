@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>register</title>
+  <link rel="stylesheet" href="CSS/style.css" />
+</head>
+<body>
+  <div class="page-wrap">
+    <main class="card auth-card">
+      <button class="back" onclick="location.href='index.html'" style="width: 385px; text-align: right;height: 40px;">返回</button>
+      <header class="card-header">
+        <h2>创建账号</h2>
+        <p class="subtitle">请使用邮箱注册 </p>
+      </header>
+
+      <form id="registerForm" class="form" novalidate>
+
+        <label id="emailField" class="field">
+          <span class="label-text">邮箱</span>
+          <input id="regEmail" name="email" type="email"/>
+          <div class="field-error" data-for="email"></div>
+        </label>
+
+        <label class="field">
+          <span class="label-text">用户名</span>
+          <input id="regUser" name="username" type="text"/>
+          <div class="field-error" data-for="username"></div>
+        </label>
+
+        <div class="field code-field">
+          <button id="sendCodeBtn" type="button" class="btn small">获取验证码</button>
+          <input id="regCode" name="code" type="text" placeholder="6位验证码" inputmode="numeric" />
+          <div class="field-error" data-for="code"></div>
+        </div>
+
+        <label class="field">
+          <span class="label-text">设置密码</span>
+          <input id="regPwd" name="password" type="password" placeholder="至少6位密码" minlength="6" />
+          <div class="field-error" data-for="password"></div>
+        </label>
+
+        <div id="registerMsg" class="msg"></div>
+
+        <label class="checkbox">
+            <input type="checkbox" id="remember" /> <span>勾选允许进行订阅以获取我们的消息</span>
+        </label>
+
+        <label class="checkbox">
+            <input type="checkbox" id="remember" /> <span>勾选我们将进行广告推送</span>
+        </label>
+
+        <button id="registerBtn" class="btn btn-primary full">注册</button>
+        
+        <p class="small muted center">
+          已有账号？ <a href="login.html">去登录</a>
+        </p>
+      </form>
+    </main>
+  </div>
+
+  <script src="JS/script.js"></script>
+  <script>
+    // 切换注册方式（手机号 / 邮箱）
+    document.querySelectorAll('.toggle-group .toggle').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.toggle-group .toggle').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        const mode = btn.dataset.mode;
+        document.getElementById('phoneField').classList.toggle('visible', mode === 'phone');
+        document.getElementById('emailField').classList.toggle('visible', mode === 'email');
+      });
+    });
+
+    // 获取验证码
+    document.getElementById('sendCodeBtn').addEventListener('click', async () => {
+      clearFieldErrors();
+      const mode = document.querySelector('.toggle.active').dataset.mode;
+      const phone = document.getElementById('regPhone').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+
+      if (mode === 'phone' && !/^\d{10,15}$/.test(phone)) {
+        showFieldError('phone','请输入有效手机号（仅数字）');
+        return;
+      }
+      if (mode === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showFieldError('email','请输入有效邮箱');
+        return;
+      }
+
+      const btn = document.getElementById('sendCodeBtn');
+      setLoading(btn, true, '发送中...');
+      try {
+        // 调用后端发送验证码接口（占位）
+        const resp = await fakeApiCall('/api/send-code', { mode, phone, email });
+        if (resp.ok) {
+          startCountdown(btn, 60);
+          showMsg('验证码已发送', 'success', 'registerMsg');
+        } else {
+          showMsg(resp.error || '发送失败', 'error', 'registerMsg');
+        }
+      } catch (err) {
+        showMsg('网络错误，请重试', 'error', 'registerMsg');
+      } finally {
+        setLoading(btn, false);
+      }
+    });
+
+    // 提交注册
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearFieldErrors();
+      const mode = document.querySelector('.toggle.active').dataset.mode;
+      const phone = document.getElementById('regPhone').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const username = document.getElementById('regUser').value.trim();
+      const code = document.getElementById('regCode').value.trim();
+      const pwd = document.getElementById('regPwd').value;
+
+      let ok = true;
+      if (mode === 'phone' && !/^\d{10,15}$/.test(phone)) { showFieldError('phone','请输入有效手机号'); ok=false; }
+      if (mode === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showFieldError('email','请输入有效邮箱'); ok=false; }
+      if (!code || code.length < 4) { showFieldError('code','请输入验证码'); ok=false; }
+      if (!pwd || pwd.length < 6) { showFieldError('password','密码至少6位'); ok=false; }
+      if (!ok) return;
+
+      const btn = document.getElementById('registerBtn');
+      setLoading(btn, true, '注册中...');
+      try {
+        const payload = { mode, phone, email, username, code, password: pwd };
+        const resp = await fakeApiCall('/api/register', payload);
+        if (resp.ok) {
+          showMsg('注册成功，已登录', 'success', 'registerMsg');
+          setTimeout(()=> location.href='index.html', 700);
+        } else {
+          showMsg(resp.error || '注册失败', 'error', 'registerMsg');
+        }
+      } catch (err) {
+        showMsg('网络错误，请重试', 'error', 'registerMsg');
+      } finally {
+        setLoading(btn, false);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>iCloud 风格 登录 — Demo</title>
+  <link rel="stylesheet" href="CSS/style.css" />
+</head>
+<body>
+  <div class="page-wrap">
+    <main class="card shell">
+      <header class="card-header">
+        <h1 class="brand">智能合约解析系统</h1>
+        <p class="subtitle">欢迎回来 — 管理你的空间</p>
+      </header>
+
+      <div class="actions">
+        <a class="btn btn-primary" href="login.html">登录</a>
+        <!-- <a class="btn btn-primary" href="register.html">注册</a> -->
+        <a class="btn" href="register.html">注册</a>
+      </div>
+
+      <footer class="card-footer">
+        <a href="Privacy Policy/Privacy.html"><small>使用条款 • 隐私政策</small></a>
+      </footer>
+    </main>
+
+    <div class="attribution">
+      <small>ContractGPT· 智能合约解析系统</small>
+    </div>
+  </div>
+
+  <script>
+    // 轻量：按 Enter 键跳转到 登录
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') location.href = 'login.html';
+    });
+  </script>
+</body>
+</html>

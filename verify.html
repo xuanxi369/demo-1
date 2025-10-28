@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>verify</title>
+  <link rel="stylesheet" href="CSS/style.css" />
+</head>
+<body>
+  <div class="page-wrap">
+    <main class="card auth-card">
+      <button class="back" onclick="location.href='index.html'" style="width: 385px; text-align: right;height: 40px;">返回</button>
+      <header class="card-header">
+        <h2 id="verifyTitle">验证码登录</h2>
+        <!-- <p class="subtitle" id="verifySubtitle">输入手机 / 邮箱收到的验证码登录</p> -->
+      </header>
+
+      <form id="verifyForm" class="form" novalidate>
+        <label class="field">
+          <span class="label-text">手机号或邮箱</span>
+          <input id="verifyId" name="id" type="text" />
+          <div class="field-error" data-for="id"></div>
+        </label>
+
+        <div class="field code-field">
+          <button id="verifySendBtn" type="button" class="btn small">发送验证码</button>
+          <input id="verifyCode" name="code" type="text" inputmode="numeric" placeholder="6位验证码" />
+        </div>
+
+        <div id="verifyMsg" class="msg"></div>
+
+        <button id="verifyBtn" class="btn btn-primary full">验证并登录</button>
+      </form>
+    </main>
+  </div>
+
+  <script src="JS/script.js"></script>
+  <script>
+    // 从 URL 获取 mode 参数（login/register）
+    const params = new URLSearchParams(location.search);
+    const mode = params.get('mode') || 'login';
+    document.getElementById('verifyTitle').textContent = mode === 'login' ? '验证码登录' : '请输入验证码完成注册';
+
+    document.getElementById('verifySendBtn').addEventListener('click', async () => {
+      const id = document.getElementById('verifyId').value.trim();
+      if (!id) { showFieldError('id','请输入手机号或邮箱'); return; }
+      const btn = document.getElementById('verifySendBtn');
+      setLoading(btn, true, '发送中...');
+      try {
+        const resp = await fakeApiCall('/api/send-code', { mode: 'verify', id });
+        if (resp.ok) { startCountdown(btn, 60); showMsg('验证码已发送', 'success', 'verifyMsg'); }
+        else showMsg(resp.error || '发送失败', 'error', 'verifyMsg');
+      } catch (err) {
+        showMsg('网络错误，请重试', 'error', 'verifyMsg');
+      } finally { setLoading(btn, false); }
+    });
+
+    document.getElementById('verifyForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearFieldErrors();
+      const id = document.getElementById('verifyId').value.trim();
+      const code = document.getElementById('verifyCode').value.trim();
+      if (!id) { showFieldError('id','请输入手机号或邮箱'); return; }
+      if (!code || code.length < 4) { showFieldError('code','请输入验证码'); return; }
+
+      const btn = document.getElementById('verifyBtn');
+      setLoading(btn, true, '验证中...');
+      try {
+        const resp = await fakeApiCall('/api/verify-code', { id, code, mode });
+        if (resp.ok) {
+          showMsg('验证通过，登录中...', 'success', 'verifyMsg');
+          setTimeout(()=> location.href='index.html', 700);
+        } else {
+          showMsg(resp.error || '验证码错误或已过期', 'error', 'verifyMsg');
+        }
+      } catch (err) {
+        showMsg('网络错误，请重试', 'error', 'verifyMsg');
+      } finally {
+        setLoading(btn, false);
+      }
+    });
+  </script>
+</body>
+</html>

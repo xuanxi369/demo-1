@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login</title>
+  <link rel="stylesheet" href="CSS/style.css" />
+</head>
+<body>
+  <div class="page-wrap">
+    <main class="card auth-card">
+      <button class="back" onclick="location.href='index.html'" style="width: 385px; text-align: right;height: 40px;">返回</button>
+       
+      <header class="card-header">
+        <h2>登录</h2>
+        <p class="subtitle">请使用有效账号登录</p>
+      </header>
+
+      <form id="loginForm" class="form" autocomplete="on" novalidate>
+        <label class="field">
+          <span class="label-text">邮箱 / 手机号 / 用户名</span>
+          <input id="loginId" name="loginId" type="text" inputmode="text" required />
+          <div class="field-error" data-for="loginId"></div>
+        </label>
+
+        <label class="field">
+          <span class="label-text">密码</span>
+          <input id="loginPwd" name="password" type="password" required minlength="6" />
+          <div class="field-error" data-for="password"></div>
+        </label>
+
+        <div class="form-row between">
+          <label class="checkbox">
+            <input type="checkbox" id="remember" /> <span>记住我</span>
+          </label>
+          <a class="link small" href="register.html">没有账号？注册</a>
+        </div>
+
+        <div id="loginMsg" class="msg"></div>
+
+        <button id="loginBtn" class="btn btn-primary full">登录</button>
+
+        <div class="or">
+          <span>或</span>
+        </div>
+
+        <div class="alt-actions">
+          <button type="button" class="btn ghost full" id="loginWithSMS">使用验证码登录</button>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <script src="JS/script.js"></script>
+  <script>
+    // 登录表单提交
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('loginId').value.trim();
+      const pwd = document.getElementById('loginPwd').value;
+
+      // 前端基本校验
+      clearFieldErrors();
+      let ok = true;
+      if (!id) { showFieldError('loginId','请输入邮箱/手机号/用户名'); ok=false; }
+      if (!pwd || pwd.length < 6) { showFieldError('password','请输入至少6位密码'); ok=false; }
+      if (!ok) return;
+
+      // 请求后端登录接口（占位）
+      const btn = document.getElementById('loginBtn');
+      setLoading(btn, true, '登录中...');
+      try {
+        // 将此处替换为你的 Cloudflare Worker 登录端点
+        const resp = await fakeApiCall('/api/login', { identifier: id, password: pwd });
+        if (resp.ok) {
+          showMsg('登录成功，跳转中...', 'success');
+          setTimeout(() => location.href = 'index.html', 700);
+        } else {
+          showMsg(resp.error || '登录失败，请检查账号或密码', 'error');
+        }
+      } catch (err) {
+        showMsg('网络错误，请重试', 'error');
+      } finally {
+        setLoading(btn, false);
+      }
+    });
+
+    // 快速切换到验证码登录（示例跳转到 verify 页面）
+    document.getElementById('loginWithSMS').addEventListener('click', () => {
+      location.href = 'verify.html?mode=login';
+    });
+  </script>
+</body>
+</html>
