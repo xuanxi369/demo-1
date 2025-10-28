@@ -53,28 +53,47 @@ function startCountdown(btn, seconds=60) {
 }
 
 /* 简单模拟后端请求 —— 请在接入真实后端时替换此函数 */
-async function fakeApiCall(path, payload={}) {
-  // 在这里我们模拟不同端点的响应结构
-  await new Promise(r => setTimeout(r, 600)); // 模拟网络延迟
-  if (path === '/api/send-code') {
-    // 期望返回 { ok: true } 或 { ok:false, error: '...' }
-    return { ok: true };
+// async function fakeApiCall(path, payload={}) {
+//   // 在这里我们模拟不同端点的响应结构
+//   await new Promise(r => setTimeout(r, 600)); // 模拟网络延迟
+//   if (path === '/api/send-code') {
+//     // 期望返回 { ok: true } 或 { ok:false, error: '...' }
+//     return { ok: true };
+//   }
+//   if (path === '/api/register') {
+//     // 模拟验证码校验失败或成功
+//     if (payload.code === '000000') return { ok: false, error: '验证码无效' };
+//     return { ok: true };
+//   }
+//   if (path === '/api/login') {
+//     if (payload.password === 'wrong') return { ok: false, error: '密码错误' };
+//     return { ok: true };
+//   }
+//   if (path === '/api/verify-code') {
+//     if (payload.code === '123456') return { ok: true };
+//     return { ok: false, error: '验证码错误' };
+//   }
+//   return { ok: false, error: '未知接口' };
+// }
+
+
+/* ---------- 真实后端请求 ---------- */
+async function fakeApiCall(path, payload = {}) {
+  const base = 'https://7777-bonus-b72e.millychck-033.workers.dev'; // 你的 Cloudflare Worker 地址
+  try {
+    const resp = await fetch(base + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await resp.json();
+    return data;
+  } catch (err) {
+    console.error('网络错误:', err);
+    return { ok: false, error: '网络请求失败，请稍后再试' };
   }
-  if (path === '/api/register') {
-    // 模拟验证码校验失败或成功
-    if (payload.code === '000000') return { ok: false, error: '验证码无效' };
-    return { ok: true };
-  }
-  if (path === '/api/login') {
-    if (payload.password === 'wrong') return { ok: false, error: '密码错误' };
-    return { ok: true };
-  }
-  if (path === '/api/verify-code') {
-    if (payload.code === '123456') return { ok: true };
-    return { ok: false, error: '验证码错误' };
-  }
-  return { ok: false, error: '未知接口' };
 }
+
 
 /* DOM helper（login 页面引用的函数） */
 function showFieldErrorInline(name, text) { showFieldError(name,text); }
